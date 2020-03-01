@@ -29,6 +29,7 @@ public class TestBase extends AbstractTestNGCucumberTests {
             WebDriverManager.chromedriver().setup();
             //String chromePath = System.getProperty("user.dir") + "/Resources/chromedriver";
             //System.setProperty("webdriver.chrome.driver", chromePath);
+
             //to download file in Downloads file
             String downloadFilepath = System.getProperty("user.dir") + "/Downloads";
             ChromeOptions options = new ChromeOptions();
