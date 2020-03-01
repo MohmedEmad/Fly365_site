@@ -11,6 +11,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import step_definition.FlightAndHubAPIs.BookingCycleAPI;
 import step_definition.RetrieveYourFlightBookingTest.*;
 
 public class HubLogin extends TestBase {
@@ -172,7 +173,7 @@ public class HubLogin extends TestBase {
     public void searchForOrderNumberFromAdvancedSearch() throws InterruptedException {
         driver.findElement(advSearchBTN).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(orderNumberTXT));
-        driver.findElement(orderNumberTXT).sendKeys(HomeTest.orderNumber);
+        driver.findElement(orderNumberTXT).sendKeys(BookingCycleAPI.orderNumberCheckoutResponse);
         Thread.sleep(1500);
         driver.findElement(submitSearchBTN).click();
         driver.findElement(advSearchBTN).click();
@@ -182,7 +183,7 @@ public class HubLogin extends TestBase {
     @And("^Search for Order Number from Quick Search$")
     public void searchForOrderNumberFromQuickSearch() {
         wait.until(ExpectedConditions.visibilityOfElementLocated(quickSearchTXT));
-        driver.findElement(quickSearchTXT).sendKeys(HomeTest.orderNumber);
+        driver.findElement(quickSearchTXT).sendKeys(BookingCycleAPI.orderNumberCheckoutResponse);
         wait.until(ExpectedConditions.visibilityOfElementLocated(frstQuickSearchItem));
         driver.findElement(quickSearchTXT).sendKeys(Keys.ARROW_DOWN);
         driver.findElement(quickSearchTXT).sendKeys(Keys.ENTER);
@@ -200,7 +201,7 @@ public class HubLogin extends TestBase {
     public void searchForBookingReturnedInQuickSearch(String order){
         String orderNumber = null;
         if(order.equalsIgnoreCase("booking pnr response")){
-            orderNumber = HomeTest.pnrNumberCheckoutResponse;
+            orderNumber = BookingCycleAPI.pnrNumberCheckoutResponse;
         }
         else if(order.equalsIgnoreCase("retrieved booking pnr")){
             orderNumber = RetrieveYourFlightBookingTest.retrievedBookingPnr;

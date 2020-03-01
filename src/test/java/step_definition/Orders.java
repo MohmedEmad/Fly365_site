@@ -3,17 +3,14 @@ package step_definition;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Then;
-import helper.APIUtility;
 import helper.TestBase;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import helper.GeneralMethods;
-import static helper.APIUtility.flyRef;
 
 import org.openqa.selenium.support.ui.Select;
+import step_definition.FlightAndHubAPIs.BookingCycleAPI;
 
 public class Orders extends TestBase {
 
@@ -36,43 +33,44 @@ public class Orders extends TestBase {
     private By mobileNumber = By.xpath("//span[@class='information-label'][contains(text(),'+1')]");
     private By title = By.xpath("//select[@name='title']");
 
+    BookingCycleAPI bookingApiObj = new BookingCycleAPI();
 
     @Then("^Assert that Airline reference is correct$")
     public void assertThatAirlineReferenceIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(airLineref).getText().trim(),APIUtility.airLineRef);
+        Assert.assertEquals(driver.findElement(airLineref).getText().trim(),bookingApiObj.airLineRef);
 
     }
 
     @Then("^Assert that Fly reference is correct$")
     public void assertThatFlyReferenceIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(flyref).getText().trim(), flyRef);
+        Assert.assertEquals(driver.findElement(flyref).getText().trim(), bookingApiObj.pnrNumberCheckoutResponse);
     }
 
     @Then("^Assert that store user is correct$")
     public void assertThatStoreUserIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(storeUserid).getText(),APIUtility.storeUser);
+        Assert.assertEquals(driver.findElement(storeUserid).getText(),bookingApiObj.storeUser);
 
     }
 
     @Then("^Assert that Payment Gateway is correct$")
     public void assertThatPaymentGatewayIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(paymentGatwayid).getText(),APIUtility.paymentGateway);
+        Assert.assertEquals(driver.findElement(paymentGatwayid).getText(),bookingApiObj.paymentGateway);
     }
 
     @Then("^Assert that total price is correct$")
     public void assertThatTotalPriceIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(displayedPrice).getText().replaceAll("0*\\D*$",""),APIUtility.totalPrice);
+        Assert.assertEquals(driver.findElement(displayedPrice).getText().replaceAll("0*\\D*$",""),bookingApiObj.totalPrice);
     }
 
     @Then("^Assert that Discount campaign name is correct$")
     public void assertThatDiscountCampaignNameIsCorrect() throws InterruptedException {
         Thread.sleep(4000);
-        Assert.assertEquals(driver.findElement(discountCampaign).getText(),APIUtility.discountName);
+        Assert.assertEquals(driver.findElement(discountCampaign).getText(),bookingApiObj.discountName);
     }
 
 

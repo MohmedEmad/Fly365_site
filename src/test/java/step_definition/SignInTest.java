@@ -96,7 +96,7 @@ public class SignInTest extends TestBase {
         //WebElement passWordErrorMessage = driver.findElement(PassWordErrorMSG);
         //Assert.assertTrue(passWordErrorMessage.isDisplayed());
         String PassWordErrorMSGText = driver.findElement(PassWordErrorMSG).getText();
-        Assert.assertEquals(PassWordErrorMSGText, "!password is too short (minimum is 8 characters)");
+        Assert.assertEquals(PassWordErrorMSGText, "password is too short (minimum is 8 characters)");
     }
 
     @Then("^user shall see password too long error message$")
@@ -105,7 +105,7 @@ public class SignInTest extends TestBase {
         //WebElement passWordErrorMessage = driver.findElement(PassWordErrorMSG);
         //Assert.assertTrue(passWordErrorMessage.isDisplayed());
         String PassWordErrorMSGText = driver.findElement(PassWordErrorMSG).getText();
-        Assert.assertEquals(PassWordErrorMSGText, "!password is too long (maximum is 50 characters)");
+        Assert.assertEquals(PassWordErrorMSGText, "password is too long (maximum is 50 characters)");
     }
 
     @Then("^user shall see empty password error message$")
@@ -126,7 +126,7 @@ public class SignInTest extends TestBase {
         //WebElement emailErrorMessage = driver.findElement(EmailErrorMSG);
         //Assert.assertTrue(emailErrorMessage.isDisplayed());
         String EMailErrorMSGText = driver.findElement(EmailErrorMSG).getText();
-        Assert.assertEquals(EMailErrorMSGText, "!Please enter a valid email");
+        Assert.assertEquals(EMailErrorMSGText, "Please enter a valid email");
     }
 
     @Then("^user shall see email error message$")
@@ -135,7 +135,7 @@ public class SignInTest extends TestBase {
         //WebElement emailErrorMessage = driver.findElement(EmailErrorMSG);
         //Assert.assertTrue(emailErrorMessage.isDisplayed());
         String EMailErrorMSGText = driver.findElement(EmailErrorMSG).getText();
-        Assert.assertEquals(EMailErrorMSGText, "!Please enter a valid email");
+        Assert.assertEquals(EMailErrorMSGText, "Please enter a valid email");
     }
 
     @And("^user enter an empty email$")

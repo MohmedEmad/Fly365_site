@@ -116,7 +116,8 @@ public class PassengersDetailsTest extends TestBase {
 
 
     @Then("^'Passenger' page will be opened$")
-    public void passengerPageWillBeOpened() {
+    public void passengerPageWillBeOpened() throws InterruptedException {
+        Thread.sleep(1500);
         Assert.assertEquals(driver.getTitle(), "Fly365 - passengers");
     }
 

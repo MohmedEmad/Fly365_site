@@ -30,7 +30,7 @@ public class TestBase extends AbstractTestNGCucumberTests {
             //String chromePath = System.getProperty("user.dir") + "/Resources/chromedriver";
             //System.setProperty("webdriver.chrome.driver", chromePath);
 
-              //to download file in Downloads file
+            //to download file in Downloads file
             String downloadFilepath = System.getProperty("user.dir") + "/Downloads";
             ChromeOptions options = new ChromeOptions();
             HashMap<String, Object> chromePrefs = new HashMap<String, Object>();

@@ -17,7 +17,8 @@ public class SearchResultTest extends TestBase {
     private By stopsFilterBTN = By.xpath("//button[contains(text(),'STOPS')]");
     private By onlyOneStopsLINK = By.xpath("//label[span//div[contains(text(), '1')]]/following-sibling::button");
     private By tripPriceVAL = By.xpath("//div[@id='itin-gp-2-price']");
-    private By frstHoldBTN = By.xpath("/html/body/div[1]/div/div[2]/div/div[3]/div/div[2]/div[2]/div[2]/div[2]/div/button[1]");
+    private By frstHoldBTN = By.xpath("(//button[contains(text(),'HOLD FOR')])[1]");
+    private By holdBTN = By.xpath("//button[contains(text(),'HOLD FOR')]");
 
 
     public static String tripPrice;
@@ -66,7 +67,7 @@ public class SearchResultTest extends TestBase {
     @Then("^Hold button is not displayed$")
     public void holdButtonIsNotDisplayed() {
         //WebElement frstHoldElmnt = driver.findElement(frstHoldBTN);
-        Assert.assertTrue(wait.until(ExpectedConditions.invisibilityOfElementLocated(frstHoldBTN)));
+        Assert.assertTrue(wait.until(ExpectedConditions.invisibilityOfElementLocated(holdBTN)));
     }
 
 }

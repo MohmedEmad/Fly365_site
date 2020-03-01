@@ -13,7 +13,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import step_definition.FlightAndHubAPIs.BookingCycleAPI;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -22,11 +25,9 @@ public class HomeTest extends TestBase {
     WebDriverWait wait = new WebDriverWait(driver, 30);
     GeneralMethods gmObject = new GeneralMethods();
     APIUtility apiObject = new APIUtility();
+    BookingCycleAPI bookingApiObj = new BookingCycleAPI();
     ConfirmationTest ctobject = new ConfirmationTest();
-    public static String orderNumber = null;
-    public static String pnrNumberCheckoutResponse = null;
     public static String currentWindow = driver.getWindowHandle();
-
 
 
     private By aboutUsLINK = By.xpath("//a[text()='About us']");
@@ -248,28 +249,23 @@ public class HomeTest extends TestBase {
 
 
     @And("^Book a \"(.*)\" trip from API for \"(.*)\" and get \"(.*)\"$")
-    public void bookATripFromAPIForAndGet(String tripType , String domain, String reference) {
+    public void bookATripFromAPIForAndGet(String tripType , String domain, String reference) throws IOException {
         //String requestUrl = "https://api.fly365" + domain + ".com/flight-search/search";
         String requestUrl = "https://nz.fly365" + domain + ".com/api/flight-search/search";
         String allAvailableTrips = null;
         if(tripType.contains("multi")){
-            allAvailableTrips = apiObject.sendPostRequest(requestUrl, apiObject.multiCityAPI());
+            allAvailableTrips = apiObject.sendRequestFlight(requestUrl, bookingApiObj.multiCityAPI(),"post");
         }
         else if(tripType.contains("round")){
-            allAvailableTrips = apiObject.sendPostRequest(requestUrl, apiObject.roundTripAPI());
+            allAvailableTrips = apiObject.sendRequestFlight(requestUrl, bookingApiObj.roundTripAPI(),"post");
         }
         else if(tripType.contains("one")){
-            allAvailableTrips = apiObject.sendPostRequest(requestUrl, apiObject.oneWayAPI());
+            allAvailableTrips = apiObject.sendRequestFlight(requestUrl, bookingApiObj.oneWayAPI(), "post");
         }
-        String itinaryID = apiObject.getItineraryId(allAvailableTrips, 1);
-        String cardID = apiObject.createCart(itinaryID, domain);
-        apiObject.addPassenger(cardID, domain);
-        if (reference.equals("order")) {
-            orderNumber = apiObject.checkoutTrip(cardID, domain)[0];
-        }
-        if (reference.equals("Fly365 Reference")) {
-            pnrNumberCheckoutResponse = apiObject.checkoutTrip(cardID, domain)[1];
-        }
+        bookingApiObj.itinaryIdFromSearchRequest = bookingApiObj.getItineraryId(allAvailableTrips, 5);
+        bookingApiObj.cartIdForSelectedItinerary = bookingApiObj.createCart(bookingApiObj.itinaryIdFromSearchRequest, domain);
+        bookingApiObj.addPassenger(bookingApiObj.cartIdForSelectedItinerary, domain);
+        bookingApiObj.checkoutTrip(bookingApiObj.cartIdForSelectedItinerary, domain);
     }
 
 
@@ -286,13 +282,21 @@ public class HomeTest extends TestBase {
 
     @And("^Add a valid \"(.*)\"$")
     public void addAValid(String reference) {
-        driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(orderNumber);
-        // if (reference.equals("order")) {
-        //     driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(orderNumber);
-        // }
-        // if (reference.equals("order")) {
-        //     driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(orderNumber);
-        // }
+        if (reference.equals("orderNumber")) {
+           driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(bookingApiObj.orderNumberCheckoutResponse);
+       }
+       else if (reference.equals("modifiedOrderNumber")) {
+           driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(ApplyModifyTest.modifiedOrderNumberFromApi);
+       }
+        else if (reference.equals("oldOrderNumber")) {
+            driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(ApplyModifyTest.oldOrderNumber);
+        }
+        else if (reference.equals("pnrNumber") || reference.equalsIgnoreCase("fly365Reference")){
+            driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(bookingApiObj.pnrNumberCheckoutResponse);
+        }
+        else if (reference.equals("airlineReference")){
+            driver.findElement(findMyBookingAirlineFly365OrderTXT).sendKeys(bookingApiObj.airLineRef);
+        }
     }
 
     @And("^Add a valid Reference 'Fly365 Ref'$")
@@ -366,7 +370,6 @@ public class HomeTest extends TestBase {
             DataBase.execute_query_dbs("k8stage1.cl9iojf4kdop.eu-west-1.rds.amazonaws.com:5432", "user_api", "delete from newsletter_users where email='" + emailAddress + "'");
         }
         driver.findElement(subscriptionTXT).sendKeys(emailAddress);
-
     }
 
 
@@ -394,7 +397,7 @@ public class HomeTest extends TestBase {
 
     @Then("^Error validation message is displayed$")
     public void errorValidationMessageIsDisplayed() {
-        Assert.assertEquals(driver.findElement(alreadySubscribedErrorMSG).getText(),"You have already subscribed fly365");
+        Assert.assertEquals(driver.findElement(alreadySubscribedErrorMSG).getText(),"you have already subscribed fly365");
 
     }
 
@@ -507,6 +510,75 @@ public class HomeTest extends TestBase {
         driver.findElement(WorldWideStore).click();
         String HomeURL = driver.getCurrentUrl();
         Assert.assertEquals(HomeURL,"https://" +"www"+".fly365" + site.toLowerCase() + ".com/en");
+
+    }
+
+    @And("^Search for trip using API$")
+    public void searchForTripUsingAPI(DataTable Data) throws IOException {
+        String requestUrl = "https://nz.fly365stage.com/api/flight-search/search";
+        String departures[] = null, arrivals[] = null, depDates[] = null;
+        int adults =0 , infants = 0, child = 0;
+        String cabinClass = null;
+        for (Map<String, String> SearchData : Data.asMaps(String.class, String.class)) {
+            departures = SearchData.get("departures").split(",");
+            arrivals = SearchData.get("arrivals").split(",");
+            depDates = SearchData.get("depDatesAfter").split(",");
+            adults = Integer.parseInt(SearchData.get("Adults"));
+            child = Integer.parseInt(SearchData.get("Child"));
+            infants = Integer.parseInt(SearchData.get("Infants"));
+            cabinClass = SearchData.get("CabinClass");
+        }
+        bookingApiObj.itinerariesSearchRequest = apiObject.sendRequestFlight(requestUrl, bookingApiObj.oneWayAPITest(departures, arrivals, depDates, adults, child, infants, cabinClass),"post");
+    }
+
+
+    @And("^Add passengers with this data$")
+    public void addPassengersWithThisData(DataTable table) throws IOException {
+        String birthDates[] = null, passengerTypes[] = null, titles[] = null, firstNames[] = null, lastNames[] = null,
+                passportNumber[] = null, passportExpiry[] = null, passportCountry[] = null, frequentFlyer[] = null,
+                seats[] = null, meals[] = null, specialAssist[] = null;
+        String customerTitle = null, customerFirstName = null, customerLastName = null, phoneNumber = null, email = null, specialRequest = null;
+
+        List<List<String>> rows = table.asLists(String.class);
+        birthDates = rows.get(0).get(1).split(",");
+        passengerTypes = rows.get(1).get(1).split(",");
+        titles = rows.get(2).get(1).split(",");
+        firstNames = rows.get(3).get(1).split(",");
+        lastNames = rows.get(4).get(1).split(",");
+        passportNumber = rows.get(5).get(1).split(",");
+        passportExpiry = rows.get(6).get(1).split(",");
+        passportCountry = rows.get(7).get(1).split(",");
+        frequentFlyer = rows.get(8).get(1).split(",");
+        seats = rows.get(9).get(1).split(",");
+        meals = rows.get(10).get(1).split(",");
+        specialAssist = rows.get(11).get(1).split(",");
+        customerTitle = rows.get(12).get(1);
+        customerFirstName = rows.get(13).get(1);
+        customerLastName = rows.get(14).get(1);
+        phoneNumber = rows.get(15).get(1);
+        email = rows.get(16).get(1);
+        specialRequest = rows.get(17).get(1);
+        bookingApiObj.addPassengerTest(bookingApiObj.cartIdForSelectedItinerary,"stage", birthDates, passengerTypes, titles, firstNames, lastNames, passportNumber, passportExpiry,
+                passportCountry, frequentFlyer, seats, meals, specialAssist, customerTitle, customerFirstName, customerLastName, phoneNumber, email, specialRequest);
+    }
+
+    @And("^Choose trip number \"([^\"]*)\" and create cart$")
+    public void chooseTripNumberAndCreateCart(String tripNumber) throws Throwable {
+        int tripNum= Integer.parseInt(tripNumber);
+        bookingApiObj.itinaryIdFromSearchRequest = bookingApiObj.getItineraryId(bookingApiObj.itinerariesSearchRequest, tripNum);
+        bookingApiObj.cartIdForSelectedItinerary = bookingApiObj.createCart(bookingApiObj.itinaryIdFromSearchRequest, "stage");
+    }
+
+    @And("^Checkout and get booking details$")
+    public void checkoutAndGetBookingDetails(DataTable Data) throws IOException {
+        String cardHolderName=null, cardExpiryDate=null, cardNumber=null, cvv=null;
+        for (Map<String, String> cardData : Data.asMaps(String.class, String.class)) {
+            cardHolderName = cardData.get("cardHolderName");
+            cardExpiryDate = cardData.get("cardExpiryDate");
+            cardNumber = cardData.get("cardNumber");
+            cvv = cardData.get("cvv");
+        }
+        bookingApiObj.checkoutItinerary(bookingApiObj.cartIdForSelectedItinerary, "stage", cardHolderName, cardExpiryDate, cardNumber, cvv);
 
     }
 

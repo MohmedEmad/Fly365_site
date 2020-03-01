@@ -7,6 +7,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import step_definition.FlightAndHubAPIs.BookingCycleAPI;
 
 public class RetrieveYourFlightBookingTest extends TestBase {
 
@@ -21,11 +22,11 @@ public class RetrieveYourFlightBookingTest extends TestBase {
     @Then("^The system will retrieve the details of the Booking for this \"(.*)\"$")
     public void theSystemWillRetrieveTheDetailsOfTheBookingForThis(String reference) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(retrieveYourFlightBookingHDR));
-        if (reference.equals("Airline Reference")) {
-            Assert.assertEquals(HomeTest.orderNumber, driver.findElement(airlineRefHDR).getText());
+        if (reference.equals("airlineReference")) {
+            Assert.assertEquals(BookingCycleAPI.orderNumberCheckoutResponse, driver.findElement(airlineRefHDR).getText());
         }
-        if (reference.equals("Fly365 Reference")) {
-            Assert.assertEquals(HomeTest.pnrNumberCheckoutResponse, driver.findElement(fly365RefHDR).getText());
+        if (reference.equals("fly365Reference")) {
+            Assert.assertEquals(BookingCycleAPI.pnrNumberCheckoutResponse, driver.findElement(fly365RefHDR).getText());
         }
     }
 

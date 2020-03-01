@@ -1,9 +1,6 @@
 package step_definition;
 
 import com.github.javafaker.Faker;
-import com.google.gson.JsonObject;
-import com.mongodb.util.JSON;
-import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -11,29 +8,27 @@ import helper.APIUtility;
 import helper.DataBase;
 import helper.GeneralMethods;
 import helper.TestBase;
-import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import step_definition.FlightAndHubAPIs.BookingCycleAPI;
+import step_definition.FlightAndHubAPIs.HubRulesAPIs;
 
-import java.lang.reflect.Array;
-import java.security.Key;
-import java.util.*;
-import java.util.stream.Stream;
+import java.io.IOException;
+import java.util.List;
 
 public class Discount extends TestBase {
 
     GeneralMethods gm = new GeneralMethods();
     APIUtility api = new APIUtility();
+    BookingCycleAPI bookingApiObj = new BookingCycleAPI();
+    HubRulesAPIs hubRulesApiObj = new HubRulesAPIs();
     FluentWait<WebDriver> wait = new WebDriverWait(driver, 30, 1000).withMessage("Element not found yet");
 
     private By systemBarMenuBTN = By.xpath("//div[@class='el-submenu__title']//img");
@@ -58,7 +53,7 @@ public class Discount extends TestBase {
     String discountEnteredName = Fake.name().name();
     String discountName = null;
     String allTrips = null;
-    String discountStatus = null;
+    //String discountStatus = null;
 
     private String hostName = "k8stage1.cl9iojf4kdop.eu-west-1.rds.amazonaws.com:5432";
     private String dbsName = "discount_api";
@@ -98,14 +93,14 @@ public class Discount extends TestBase {
     }
 
     @When("^Apply discount rule from API$")
-    public void applyDiscountRuleFromAPI() {
-            api.sendPostRequest("https://api.fly365stage.com/discount/campaign", api.createDiscount(discountEnteredName));
+    public void applyDiscountRuleFromAPI() throws IOException {
+            api.sendRequestHub("https://internal.fly365stage.com/discount/campaign", hubRulesApiObj.createDiscount(discountEnteredName),"post");
     }
 
     @And("^Make Search from API$")
-    public void makeSearchFromAPI() throws InterruptedException {
+    public void makeSearchFromAPI() throws InterruptedException, IOException {
         Thread.sleep(5000);
-        allTrips = api.sendPostRequest("https://nz.fly365stage.com/api/flight-search/search", api.oneWayAPI());
+        allTrips = api.sendRequestFlight("https://nz.fly365stage.com/api/flight-search/search", bookingApiObj.oneWayAPI(),"post");
     }
 
     @And("^Open certain store$")
@@ -165,9 +160,10 @@ public class Discount extends TestBase {
     @Then("^Check Discount rule applied$")
     public void checkDiscountRuleApplied() throws InterruptedException {
         Thread.sleep(3000);
-        discountName = api.getDiscountName(allTrips, 1);
-        System.out.println(discountName);
-        Assert.assertEquals(discountName, discountEnteredName);
+        List<String> discountname = api.jsonPathEvaluator.getList("itineraries.discounts.name");
+        for (String discount : discountname) {
+            Assert.assertEquals(discount ,discountEnteredName);
+        }
     }
 
 
@@ -181,8 +177,10 @@ public class Discount extends TestBase {
     @Then("^Check Discount rule disabled$")
     public void checkDiscountRuleDisabled() throws InterruptedException {
         Thread.sleep(20000);
-        discountStatus = api.getDiscountStatus(allTrips, 1);
-        Assert.assertEquals(discountStatus, "null");
+        List<String> discountStatus = api.jsonPathEvaluator.getList("itineraries.discounts");
+        for (String discount : discountStatus) {
+            Assert.assertEquals(discount ,null);
+        }
     }
 
     @And("^Delete new discount from database$")
@@ -205,23 +203,19 @@ public class Discount extends TestBase {
     @And("^Book a trip from API on \"(.*)\" and get \"(.*)\"$")
     public String bookATripFromAPIOnAndGet(String domain, String responseField) throws Throwable {
         String requestUrl = "https://api.fly365" + domain + ".com/flight-search/search";
-        String allAvailableTrips = api.sendPostRequest(requestUrl, api.oneWayAPI());
-        String itinaryID = api.getItineraryId(allAvailableTrips, 2);
-        String cardID = api.createCart(itinaryID, domain);
-        api.addPassenger(cardID, domain);
-        String[] checkoutResponse = api.checkoutTrip(cardID, domain);
-        String finalResponse = api.getresult(checkoutResponse[1], checkoutResponse[0]);
+        String allAvailableTrips = api.sendRequestFlight(requestUrl, bookingApiObj.oneWayAPI(),"post");
+        String itinaryID = bookingApiObj.getItineraryId(allAvailableTrips, 2);
+        String cardID = bookingApiObj.createCart(itinaryID, domain);
+        bookingApiObj.addPassenger(cardID, domain);
+        String finalResponse = bookingApiObj.getresult(bookingApiObj.orderIdCheckoutResponse, bookingApiObj.orderNumberCheckoutResponse);
         JSONObject jObject = new JSONObject(finalResponse);
         JSONArray arr = jObject.getJSONArray("products");
-        System.out.println(arr);
-
         String discountNAM = null;
         for (int i = 0; i < arr.length(); i++) {
             JSONArray array_1 = arr.getJSONObject(i).getJSONArray("options");
             JSONObject OBJ1 = array_1.getJSONObject(0);
             discountNAM = OBJ1.getJSONObject("discounts").get("name").toString();
         }
-        System.out.println(discountNAM);
         return responseField;
     }
 }

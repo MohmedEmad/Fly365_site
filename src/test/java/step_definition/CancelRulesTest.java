@@ -118,7 +118,6 @@ public class CancelRulesTest extends TestBase {
     public void ruleIsAddedToTheList() throws InterruptedException {
         backToRuleList();
         wait.until(ExpectedConditions.visibilityOfElementLocated(ruleInTable));
-        System.out.println(driver.findElement(ruleInTable).getText());
         Assert.assertTrue(driver.findElement(ruleInTable).getText().equalsIgnoreCase(fakerRuleName));
     }
 
@@ -174,7 +173,6 @@ public class CancelRulesTest extends TestBase {
     @And("^Submit Rule With Same Name$")
     public void createRuleSameName() throws InterruptedException {
         fakerRuleName = driver.findElement(ruleInTable).getText();
-        System.out.println(fakerRuleName);
         clickCreateRule();
         fillRuleData();
         submitRule();
@@ -211,7 +209,6 @@ public class CancelRulesTest extends TestBase {
         jse.executeScript("arguments[0].scrollIntoView()", nameElement);
         wait.until(ExpectedConditions.visibilityOfElementLocated(nameError));
         String errorTXT = driver.findElement(nameError).getText();
-        System.out.println(errorTXT);
         Assert.assertTrue(errorTXT.contains("please select another name"));
     }
 

@@ -20,7 +20,7 @@ public class ForgetPasswordTest extends TestBase {
     private By ForgeEmailTXT = By.xpath("//input[@placeholder='john@example.com']");
     private By SendEmailBTN = By.xpath("//button[contains(text(),'Send')]");
     private By EmailErrorMSG = By.xpath("//span[@class='tooltiptext with-arrow']");
-    private By unregisteredEmailSuccessfulMSG = By.xpath("//div[3]//div[1]/p");
+    private By unregisteredEmailSuccessfulMSG = By.xpath("//div[@role='alert']//p");
     private By LoginBTN = By.xpath("//button[contains(text(),'Login')]");
     private By passwordTXT = By.xpath("//form/div/div[1]//div[2]//div[1]//input");
     private By confirmPasswordTXT = By.xpath("//form/div/div[2]//div[2]//div[1]//input");

@@ -34,8 +34,9 @@ Feature: Use Contact Us Page
     And Choose Category
     And Write the message
     And Click Send
-    And Open hub login page
-    And login into hub with super admin
-    And open Back office
+    When Open hub login page
+    And  login into hub with super admin
+    And  Open menu
+    And  Open  "BackOffice"
     And open tickets
     Then contact us message appear as ticket

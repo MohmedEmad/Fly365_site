@@ -17,7 +17,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import step_definition.FlightAndHubAPIs.HubRulesAPIs;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -257,7 +259,7 @@ public class ApplyHoldTest extends TestBase {
 
 
     @Given("^Set Data on (.*) for hold Rule API through (.*) and exclude (.*)$")
-    public void setDataForHoldRule(String domain, String StoreId, String excludedAirlines,  DataTable Data) {
+    public void setDataForHoldRule(String domain, String StoreId, String excludedAirlines,  DataTable Data) throws IOException, InterruptedException {
         for (Map<String, String> holdRuleData : Data.asMaps(String.class, String.class)) {
             String departureHours = holdRuleData.get("Min hours before departure");
             String ticketingHours = holdRuleData.get("Min hours before ticketing");
@@ -265,7 +267,8 @@ public class ApplyHoldTest extends TestBase {
             String status =  holdRuleData.get("Hold status");
             String holdAmount = holdRuleData.get("hold value");
             List<String> exairlines =  new ArrayList<>(Arrays.asList(excludedAirlines.split(",")));
-            APIUtility.updateHoldRule(domain, Integer.valueOf(holdHours), Integer.valueOf(ticketingHours), Integer.valueOf(departureHours), Boolean.valueOf(status), Integer.valueOf(holdAmount), StoreId, exairlines);
+            HubRulesAPIs.updateHoldRule(domain, Integer.valueOf(holdHours), Integer.valueOf(ticketingHours), Integer.valueOf(departureHours), Boolean.valueOf(status), Integer.valueOf(holdAmount), StoreId, exairlines);
+            Thread.sleep(10000);
         }
     }
 
